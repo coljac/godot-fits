@@ -1,0 +1,31 @@
+#!/usr/bin/env python
+import os
+import sys
+
+env = SConscript("godot-cpp/SConstruct")
+
+# Tell SCons to link with cfitsio (adjust paths as needed):
+env.Append(LIBS=["cfitsio", "libwcs"])
+env.Append(LIBPATH=["/usr/local/lib", "/usr/lib/x86_64-linux-gnu"])  # or wherever libcfitsio is found
+env.Append(CPPPATH=["/usr/local/include", "/usr/include/wcslib"])  # optional if you need cfitsio headers
+
+# Add source files
+env.Append(CPPPATH=["src/"])
+sources = Glob("src/*.cpp")
+
+# Create the library target
+if env["platform"] == "macos":
+    library = env.SharedLibrary(
+        "demo/bin/libfits_reader.{}.{}.framework/libfits_reader.{}.{}".format(
+            env["platform"], env["target"], env["platform"], env["target"]
+        ),
+        source=sources,
+    )
+else:
+    library = env.SharedLibrary(
+        "demo/bin/libfits_reader{}{}".format(env["suffix"], env["SHLIBSUFFIX"]),
+        source=sources,
+    )
+
+Default(library)
+
